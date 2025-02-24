@@ -35,6 +35,14 @@ const App = Vue.createApp({
 			chatMessage: "",
 			showChat: false,
 			toast: [{ type: "", message: "" }],
+			aiEnabled: true,
+			aiComponentMounted: false,
+			aiAssistantActive: false,
+			isAILoading: false,
+			selectedVoice: 'ash',
+			triggerPhrase: 'jerry',
+			transcriptMessages: [],
+			aiAudioSession: null,
 		};
 	},
 	computed: {
@@ -172,6 +180,45 @@ const App = Vue.createApp({
 					break;
 			}
 		},
+		updateComponentState(mounted) {
+			this.aiComponentMounted = mounted;
+		},
+		async toggleAIAssistant() {
+			try {
+				this.isAILoading = true;
+				
+				if (!this.aiAssistantActive) {
+					// Create AI audio session if not exists
+					if (!this.aiAudioSession) {
+						this.aiAudioSession = window.createAIAudioSession();
+					}
+					
+					// Start the session
+					await this.aiAudioSession.startAIAudioSession();
+					this.aiAssistantActive = true;
+				} else {
+					// Stop the session
+					if (this.aiAudioSession) {
+						this.aiAudioSession.stopAIAudioSession();
+					}
+					this.aiAssistantActive = false;
+				}
+			} catch (error) {
+				this.setToast('Failed to toggle AI Assistant');
+				console.error('AI Assistant toggle error:', error);
+				this.aiAssistantActive = false;
+			} finally {
+				this.isAILoading = false;
+			}
+		},
+		setTriggerPhrase() {
+			// TODO: Implement trigger phrase setting
+			this.setToast('Trigger phrase updated', 'success');
+		},
+		clearTranscript() {
+			this.transcriptMessages = [];
+			this.setToast('Transcript cleared', 'success');
+		}
 	},
 }).mount("#app");
 

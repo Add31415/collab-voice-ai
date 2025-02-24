@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test Client</title>
+    <style>
+        #status {
+            font-weight: bold;
+        }
+        #messages {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+        }
+        .message {
+            margin-bottom: 5px;
+        }
+        .server-message {
+            color: blue;
+        }
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Test Client</h1>
+
+    <button id="connectBtn">Connect</button>
+    <button id="disconnectBtn" disabled>Disconnect</button>
+
+    <p>Status: <span id="status">Disconnected</span></p>
+
+    <div id="messages"></div>
+
+    <script>
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const statusSpan = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+
+        let ws;
+
+        function setStatus(statusText, isError = false) {
+            statusSpan.textContent = statusText;
+            statusSpan.style.color = isError ? 'red' : 'black';
+        }
+
+        function addMessage(messageText, className = '') {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = messageText;
+            messageElement.className = `message ${className}`;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to bottom
+        }
+
+        connectBtn.addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                addMessage('Already connected.', 'error-message');
+                return;
+            }
+
+            ws = new WebSocket('ws://localhost:8080');
+
+            ws.onopen = () => {
+                setStatus('Connected');
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                addMessage('Connected to test server', 'server-message');
+            };
+
+            ws.onmessage = (event) => {
+                addMessage(`Received from server: ${event.data}`, 'server-message');
+            };
+
+            ws.onclose = (event) => {
+                setStatus(`Disconnected (Code: ${event.code}, Reason: ${event.reason || 'N/A'})`);
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                addMessage('Disconnected from test server', 'server-message');
+            };
+
+            ws.onerror = (error) => {
+                setStatus(`WebSocket error: ${error.message || error}`, true);
+                addMessage(`WebSocket error: ${error.message || error}`, 'error-message');
+            };
+        });
+
+        disconnectBtn.addEventListener('click', () => {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addMessage('Not connected.', 'error-message');
+                return;
+            }
+            ws.close();
+        });
+    </script>
+</body>
+</html> 

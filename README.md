@@ -31,7 +31,15 @@ Run the app
 npm start
 ```
 
-to start the hello server on port 3000. Your hello instance will be running on http://localhost:3000.
+The app will start on https://localhost:3000. Since we're using a self-signed certificate, you'll need to:
+
+1. Open https://localhost:3000 in your browser
+2. Click "Advanced" on the security warning
+3. Click "Proceed to localhost (unsafe)"
+
+This security warning appears because we're using a self-signed certificate for development. In production, you should use a proper SSL certificate from a trusted provider.
+
+Note: WebRTC requires HTTPS in modern browsers, which is why we use SSL even in development.
 
 ### Contributions
 

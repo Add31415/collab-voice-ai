@@ -21,6 +21,81 @@
 					></a>
 				</header>
 
+				<div class="split-layout" v-if="callInitiated">
+					<div class="split-layout-left">
+						<section>
+							<div id="videos">
+								<div class="video self">
+									<video v-bind:src-object.prop.camel="localMediaStream" autoplay muted playsinline></video>
+									<div class="name"><i v-bind:class="'icon-mic'+(audioEnabled ? '' : '-off')"></i> {{name}} (You)</div>
+									<div class="buttons">
+										<button v-bind:class="'icon-mic'+(audioEnabled ? '' : '-off')" v-on:click="toggleAudio"></button>
+										<button v-bind:class="'icon-video'+(videoEnabled ? '' : '-off')" v-on:click="toggleVideo"></button>
+									</div>
+								</div>
+								<div class="video" v-for="(peer, i) in peersArray" v-bind:key="peerKey">
+									<video v-bind:src-object.prop.camel="peer.stream" autoplay playsinline></video>
+									<div class="name">
+										<i v-bind:class="'icon-mic'+(peer.isMuted ? '-off' : '')+' '+(peer.isTalking ? 'green' : '')"></i>
+										{{peer.name}}
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+
+					<div class="split-layout-right" v-if="aiEnabled">
+						<div class="ai-container">
+							<!-- Voice selector -->
+							<div class="voice-select">
+								<label for="voiceSelect">Select a voice</label>
+								<select id="voiceSelect" v-model="selectedVoice">
+									<option value="ash">Ash - Gentle & Professional</option>
+									<option value="nova">Nova - Friendly & Energetic</option>
+									<option value="echo">Echo - Clear & Precise</option>
+								</select>
+							</div>
+
+							<!-- Broadcast button -->
+							<button 
+								v-on:click="toggleAIAssistant"
+								v-bind:class="{ 
+									'active': aiAssistantActive,
+									'loading': isAILoading 
+								}"
+								v-bind:disabled="isAILoading"
+								class="w-full py-6 text-lg"
+							>
+								{{ isAILoading ? 'Please wait...' : (aiAssistantActive ? 'Stop Broadcasting' : 'Start Broadcasting') }}
+							</button>
+
+							<!-- Trigger phrase input -->
+							<div class="flex items-center gap-2 mt-4">
+								<input
+									type="text"
+									v-model="triggerPhrase"
+									placeholder="Enter trigger phrase"
+									class="flex-1"
+								/>
+								<button v-on:click="setTriggerPhrase">Set Trigger Phrase</button>
+							</div>
+						</div>
+
+						<!-- Transcript section -->
+						<div class="transcript-container">
+							<div class="transcript-header">
+								<div class="font-medium">Full Transcript</div>
+								<button v-on:click="clearTranscript" class="icon-trash">
+									<i class="icon-trash"></i>
+								</button>
+							</div>
+							<div class="transcript-content">
+								<!-- Transcript messages will go here -->
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<section id="nameWrap" class="wrap mini" v-if="!callInitiated">
 					<div class="row">Click join to enter the video call</div>
 					<div class="row">
@@ -61,26 +136,6 @@
 
 					<div class="row">
 						<button v-if="!callInitiated" v-on:click="initiateCall">Join</button>
-					</div>
-				</section>
-
-				<section v-if="callInitiated">
-					<div id="videos">
-						<div class="video self">
-							<video v-bind:src-object.prop.camel="localMediaStream" autoplay muted playsinline></video>
-							<div class="name"><i v-bind:class="'icon-mic'+(audioEnabled ? '' : '-off')"></i> {{name}} (You)</div>
-							<div class="buttons">
-								<button v-bind:class="'icon-mic'+(audioEnabled ? '' : '-off')" v-on:click="toggleAudio"></button>
-								<button v-bind:class="'icon-video'+(videoEnabled ? '' : '-off')" v-on:click="toggleVideo"></button>
-							</div>
-						</div>
-						<div class="video" v-for="(peer, i) in peersArray" v-bind:key="peerKey">
-							<video v-bind:src-object.prop.camel="peer.stream" autoplay playsinline></video>
-							<div class="name">
-								<i v-bind:class="'icon-mic'+(peer.isMuted ? '-off' : '')+' '+(peer.isTalking ? 'green' : '')"></i>
-								{{peer.name}}
-							</div>
-						</div>
 					</div>
 				</section>
 
